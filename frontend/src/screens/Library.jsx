@@ -13,7 +13,7 @@ function Library({ handlePlay, setSongDuration }) {
 
   const { allSongs } = useSelector((state) => state.songs)
   const { isPlaying, currSong } = useSelector((state) => state.player)
-
+  const [filteredSongs, setFilteredSongs] = useState([])
   const dispatch = useDispatch()
 
   const handleOnClick = (song) => {
@@ -24,6 +24,15 @@ function Library({ handlePlay, setSongDuration }) {
 
   const handleOnKeyUp = (e) => {
     if (e.key == "Enter") {
+      const newFilteredSongs = allSongs.filter(song =>
+        song.song_title.toLowerCase().includes(e.target.value.toLowerCase()) ||
+        e.target.value.toLowerCase().includes(song.song_title.toLowerCase()) ||
+        song.song_artist.some(artist =>
+          artist.full_name.toLowerCase().includes(e.target.value.toLowerCase()) ||
+          e.target.value.toLowerCase().includes(artist.full_name.toLowerCase())
+        )
+      );
+      setFilteredSongs(newFilteredSongs);
       setQuery(e.target.value);
     }
   }
@@ -47,14 +56,38 @@ function Library({ handlePlay, setSongDuration }) {
     <div className="screen-container library">
       <input type="text" name="search" className="search-box" onKeyUp={handleOnKeyUp} />
       <div className="songs-cards">
-        {allSongs.map((song, index) => {
+        {filteredSongs.length == 0 ? allSongs.map((song, index) => {
           return (<div key={index + 1} className="song-card">
             <div className="song-title">{song.song_title}</div>
             <div className="song-artist">
               by{' '}
               {song.song_artist.map((artist, inde) => (
                 <Link key={'ar' + inde} to={"/dashboard"} className="artist-link">
-                  {artist.name} {song.song_artist.length > inde+1 ? ", ":''}
+                  {artist.name} {song.song_artist.length > inde + 1 ? ", " : ''}
+                </Link>
+              ))}
+            </div>
+            <div className="action-buttons">
+              <IconContext.Provider value={{ size: "30px", className: "library-icon" }}>
+                <button style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
+                  <MdOutlinePlaylistAdd style={{ color: "black" }} />
+                </button>
+              </IconContext.Provider>
+              <IconContext.Provider value={{ size: "30px", className: "library-icon" }}>
+                <button style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
+                  {isPlayable(currSong, song) ? <IoMdPlay style={{ color: "black" }} onClick={() => handleOnClick(song)} /> : !isPlaying ? <IoMdPlay style={{ color: "black" }} onClick={handlePlay} /> : <IoMdPause style={{ color: "black" }} onClick={handlePlay} />}
+                </button>
+              </IconContext.Provider>
+            </div>
+          </div>)
+        }) : filteredSongs.map((song, index) => {
+          return (<div key={index + 1} className="song-card">
+            <div className="song-title">{song.song_title}</div>
+            <div className="song-artist">
+              by{' '}
+              {song.song_artist.map((artist, inde) => (
+                <Link key={'ar' + inde} to={"/dashboard"} className="artist-link">
+                  {artist.name} {song.song_artist.length > inde + 1 ? ", " : ''}
                 </Link>
               ))}
             </div>

@@ -115,6 +115,7 @@ def send_songs(request):
                     {
                         "id": artist.id,
                         "name": artist.user.first_name,
+                        "full_name": artist.user.first_name + artist.user.last_name,
                     }
                 )
             songs_data.append(
@@ -167,6 +168,7 @@ def sendPlaylist(request):
                         {
                             "id": artist.id,
                             "name": artist.user.first_name,
+                            "full_name": artist.user.first_name + artist.user.last_name,
                         }
                     )
                 songs_data.append(
@@ -261,11 +263,11 @@ def alter_playlist(request):
         data = json.loads(request.body)
         playlist_id = data.get("id")
         playlist = Playlist.objects.get(id=playlist_id)
-        
+
         name = data.get("pl_name")
         if not name == "":
             playlist.playlist_name = name
-        
+
         playlist.save()
 
         return JsonResponse(
@@ -423,4 +425,4 @@ def send_all_artists(request):
             )
         return JsonResponse({"status": "ok", "all_artists": artist_data})
     except Exception as e:
-        return JsonResponse({"status": "no"})
+        return JsonResponse({"error": str(e)}, status=500)
